@@ -1,0 +1,102 @@
+---
+title: "STAT564 Final Project"
+author: "Omer Faruk Yahsi, Hüseyin Sağırkaya"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(tidyverse)# Comprehensive data manipulation and visualization tools
+library(readxl)    # Reading Excel files into R
+library(curl)      # Downloading files from the internet
+```
+
+You can add options to executable code like this
+
+```{r}
+library(dplyr)     # Data manipulation toolkit
+library(purrr)     # Functional programming tools
+library(stringr)   # String manipulation functions
+library(janitor)   # Tools for data cleaning
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+library(ggplot2)   # Data visualization using Grammar of Graphics
+options(warn=-1)
+```
+
+```{r}
+# Specify the web address of the Excel file
+url <- "https://www.fhfa.gov/DataTools/Downloads/Documents/FHLBank-PUDB/2022_PUDB_EXPORT_123122.xlsx"
+
+data <- "2022_PUDB_EXPORT_123122.xlsx"
+```
+
+```{r}
+curl_download(url, destfile = data)
+```
+
+```{r}
+raw_data <- read_excel(data)
+```
+
+```{r}
+dim(raw_data)
+
+sum(is.na(raw_data))
+```
+
+```{r}
+summary(raw_data)
+
+# Load required libraries
+library(stats)
+
+# Fit the GLM
+glm_model <- glm(LTVRatioPercent ~ Bank + Borrower1Race1Type + Borrower1GenderType + 
+                    Borrower1AgeAtApplicationYears + HousingExpenseRatioPercent + 
+                    TotalDebtExpenseRatioPercent,
+                 family = gaussian(link = "identity"),
+                 data = raw_data)
+
+# View model summary
+summary(glm_model)
+```
+
+```{r}
+# Load required libraries
+library(car)
+
+# Residuals from the linear regression model
+residuals <- residuals(model)
+
+# 2. Independence Check
+plot(residuals, xlab = "Observation Order", ylab = "Residuals", main = "Independence Check")
+
+# 3. Homoscedasticity Check
+# Plot of residuals vs. fitted values
+plot(fitted(model), residuals, xlab = "Fitted Values", ylab = "Residuals", main = "Homoscedasticity Check")
+
+# Perform statistical test for homoscedasticity
+homoscedasticity_test <- ncvTest(model)
+print(homoscedasticity_test)
+
+# 4. Normality of Residuals Check
+# Histogram of residuals
+hist(residuals, main = "Histogram of Residuals", xlab = "Residuals", ylab = "Frequency")
+
+# Q-Q plot of residuals
+qqnorm(residuals)
+qqline(residuals)
+
+```
